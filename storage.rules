@@ -1,0 +1,23 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Regel für den Upload-Pfad: pdfUploads/USER_ID/DATEI
+    match /pdfUploads/{userId}/{fileName} {
+      // Nur erlauben, wenn:
+      // 1. User eingeloggt ist
+      // 2. User schreibt in eigenen Ordner
+      // 3. Datei kleiner als 150 MB
+      // 4. Datei ist ein PDF
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size < 150 * 1024 * 1024
+                   && request.resource.contentType == 'application/pdf';
+      
+    }
+    
+    // Alles andere blockieren
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
